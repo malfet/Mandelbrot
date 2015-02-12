@@ -46,6 +46,7 @@ private:
 class OffscreenSurface {
 public:
     OffscreenSurface(unsigned, unsigned);
+    OffscreenSurface(unsigned, unsigned, Palette &p);
     ~OffscreenSurface();
     inline unsigned getWidth() { return width; }
     inline unsigned getHeight() { return height; }

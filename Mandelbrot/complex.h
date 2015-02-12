@@ -30,13 +30,18 @@ public:
 };
 
 template<typename T> std::ostream& operator<<(std::ostream &out, const Complex<T> &c) {
-    return out<<"Complex("<<c.re<<","<<c.im<<")"<<std::endl;
+    return out<<"Complex("<<c.re<<","<<c.im<<")";
     
 }
 
 template<typename Ta,typename Tb> Complex<Tb> operator*(Ta a,const Complex<Tb> &b) {
     return Complex<Tb>(a*b.re,a*b.im);
 }
+
+template<typename Ta,typename Tb> Complex<Tb> operator*(const Complex<Tb> &b,Ta a) {
+    return Complex<Tb>(a*b.re,a*b.im);
+}
+
 
 template<typename T> Complex<T> exp(const Complex<T> &a) {
     return exp(a.re)*Complex<T>(cos(a.im),sin(a.im));
@@ -47,7 +52,7 @@ template<typename T> Complex<T> log(const Complex<T> &a) {
 }
 
 template<typename Ta, typename Tb> Complex<Ta> pow(const Complex<Ta> a, Tb b) {
-    return exp(log(a)*b);
+    return a.mod2()!=0 ? exp(log(a)*b) : Complex<Ta>();
 }
 
 #endif

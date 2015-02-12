@@ -29,7 +29,7 @@ public:
     {
         topleft = Complex<T>(-2,-2);
         bottomright = Complex<T>(2,2);
-        numIterations = 256;
+        numIterations = 64;
     }
     
     void render(void) {
@@ -60,6 +60,8 @@ public:
         std::cout<<"duration is "<<duration<<" ms"<<std::endl;
         delete sys;
     }
+    void updateFactory(std::function<DynamicalSystem<T> *()> f) { factory = f; }
+    void setSurface(OffscreenSurface *s) { surface = s; }
 private:
     Complex<T> topleft,bottomright;
     OffscreenSurface *surface;

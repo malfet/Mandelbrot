@@ -33,6 +33,12 @@ OffscreenSurface::OffscreenSurface(unsigned w, unsigned h):width(w),height(h)
     rgb = new unsigned char[width*height*3];
 }
 
+OffscreenSurface::OffscreenSurface(unsigned w, unsigned h, Palette &p):width(w),height(h),palette(p)
+{
+    rgb = new unsigned char[width*height*3];
+}
+
+
 void OffscreenSurface::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
     auto offs = (y*width+x)*3;
