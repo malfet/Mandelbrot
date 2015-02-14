@@ -103,16 +103,17 @@ void drawQuad(float x=0.0,float y=0.0, float w=1.0, float h=1.0, float z = -10.0
 
 class MandelPowerDemo {
 public:
-    MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(2.0),dp(.01) {
+    MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.001) {
         wrapper->setDisplayFunc(std::bind(&MandelPowerDemo::display,this));
         wrapper->setReshapeFunc(std::bind(&MandelPowerDemo::reshape, this, std::placeholders::_1, std::placeholders::_2));
+        palette[255]=RGB<unsigned char>();
     }
 private:
     std::function<DynamicalSystem<float> *()> getFactory() { return [&] { return new MandelPower<float>(p); }; }
 
     void updatePower() {
         p += dp;
-        if (p < 1.1 || p > 3.9) dp *= -1;
+        if (p < 1.0 || p > 5.0) dp *= -1;
     }
     
     void display() {
