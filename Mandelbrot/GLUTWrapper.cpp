@@ -37,6 +37,11 @@ void GLUTWrapper::run()
 }
 
 
+void GLUTWrapper::setWindowTitle(const std::string &s)
+{
+    glutSetWindowTitle(s.c_str());
+}
+
 void GLUTWrapper::redisplay()
 {
     glutPostRedisplay();

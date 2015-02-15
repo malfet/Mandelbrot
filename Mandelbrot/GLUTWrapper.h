@@ -17,6 +17,7 @@ public:
     void printDisplayDimentions();
     void init(int, int);
     void run();
+    void setWindowTitle(const std::string &);
     void setDisplayFunc(std::function<void()> f) { displayFunc = f;}
     void setReshapeFunc(std::function<void(int,int)> f) { reshapeFunc = f;}
     void redisplay();
