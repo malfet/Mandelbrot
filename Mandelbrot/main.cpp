@@ -10,6 +10,7 @@
 #include "EscapeTimeRenderer.h"
 #include <OpenGL/gl.h>
 #include <thread>
+#include <sstream>
 
 template<typename T> class PolynomialDynamicalSystem: public DynamicalSystem<T> {
 public:
@@ -106,11 +107,20 @@ public:
     MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.001) {
         wrapper->setDisplayFunc(std::bind(&MandelPowerDemo::display,this));
         wrapper->setReshapeFunc(std::bind(&MandelPowerDemo::reshape, this, std::placeholders::_1, std::placeholders::_2));
-        palette[255]=RGB<unsigned char>();
     }
 private:
     std::function<DynamicalSystem<float> *()> getFactory() { return [&] { return new MandelPower<float>(p); }; }
 
+    void startRenderer() {
+        updatePower();
+        //std::packaged_task<std::pair<float,float>()> tsk(std::bind(&EscapeTimeRenderer<float>::render, renderer));
+        std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<float> *)> tsk(&EscapeTimeRenderer<float>::render);
+
+        renderResult = tsk.get_future();
+        std::thread taskThread(std::move(tsk), renderer);
+        taskThread.detach();
+    }
+    
     void updatePower() {
         p += dp;
         if (p < 1.0 || p > 5.0) dp *= -1;
@@ -118,22 +128,36 @@ private:
     
     void display() {
         if (!surface || !renderer) return;
-        renderer->render();
-        updatePower();
         copyToTexture(surface,13);
         drawQuad();
         wrapper->redisplay();
+
+        if (renderResult.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return;
+        auto rc = renderResult.get();
+        std::ostringstream ss;
+        ss<<"x=pow(x,"<<p<<")+c area="<<rc.first<<" time="<<rc.second<<" ms";
+        wrapper->setWindowTitle(ss.str());
+        startRenderer();
     }
+    
     void reshape(int w, int h) {
+        
         glInit();
         glConfigureCamera(w, h);
-        if (surface) delete surface;
+
+        OffscreenSurface *oldSurface = surface;
         surface = new OffscreenSurface(w,h, palette);
-        if (renderer == NULL)
+        if (renderer == NULL) {
             renderer = new EscapeTimeRenderer<float>(surface, getFactory());
-        else
+            startRenderer();
+        } else {
+            renderResult.wait();
             renderer->setSurface(surface);
+        }
+        delete oldSurface;
     }
+    
+    std::future<std::pair<float,float> > renderResult;
     Palette palette;
     GLUTWrapper *wrapper;
     OffscreenSurface *surface;
@@ -145,7 +169,7 @@ int main(int argc, const char *argv[]) {
     GLUTWrapper wrapper(&argc, (char **)argv);
     MandelPowerDemo demo(&wrapper);
     
-    wrapper.init(800,600);
+    wrapper.init(640, 480);
     wrapper.run();
     return 0;
 }

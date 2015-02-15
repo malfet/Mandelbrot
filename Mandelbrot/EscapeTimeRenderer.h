@@ -24,8 +24,10 @@ public:
     virtual Complex<T> getVal() = 0;
 };
 
+
 template<typename T> class EscapeTimeRenderer {
 public:
+    
     EscapeTimeRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): surface(s), factory(f)
     {
         topleft = Complex<T>(-2,-2);
@@ -41,12 +43,12 @@ public:
                 if (steps == 0) return 0;
                 return steps + 1 - (log (log (x.mod2()))/log(2));
             }
-            if (x.mod2() < .03) return numIterations;
         }
         return numIterations;
         
     }
-    
+
+private:
     T renderSection(unsigned sx, unsigned sy, unsigned ex, unsigned ey) {
         auto w = surface->getWidth();
         auto h = surface->getHeight();
@@ -70,37 +72,59 @@ public:
         
     }
     
-    void render(void) {
+    typedef std::pair<unsigned,unsigned> point;
+    
+    point make_point(unsigned x, unsigned y) {return std::pair<unsigned,unsigned>(x,y);}
+    
+    /* Partition area into (numSection+1)*(numSection+1) equally sized squares */
+    std::vector<std::pair<point, point> > partitionArea(unsigned numSections=1) {
+        unsigned width = surface->getWidth();
+        unsigned height = surface->getHeight();
+        unsigned stepW = width/(numSections+1);
+        unsigned stepH = height/(numSections+1);
+        std::vector<std::pair<point, point> > rc;
+        for (unsigned x(0); x<numSections+1;++x)
+            for(unsigned y(0); y<numSections+1;++y) {
+                auto tl = make_point(x*stepW,y*stepH);
+                auto br = make_point(x==numSections ? width : (x+1)*stepW, y == numSections? height : (y+1)*stepH);
+                rc.push_back(std::pair<point,point>(tl,br));
+            }
+        return rc;
+    }
+    
+    std::future<T> renderAsync(point tl, point br) {
+        std::future<T> rc(std::async(std::launch::async, &EscapeTimeRenderer::renderSection, this, tl.first, tl.second, br.first, br.second));
+        return rc;
+    }
+    
+public:
+    /*Return area and time in miliseconds */
+    std::pair<T,T> render(void) {
         
         auto start = std::chrono::steady_clock::now();
-#if 0
-        T area = renderSection(0, 0, surface->getWidth(), surface->getHeight());
-#else
-        unsigned w = surface->getWidth();
-        unsigned h = surface->getHeight();
-        unsigned midw = w/2;
-        unsigned midh = h/2;
+        
+        std::vector<std::future<T> > rc;
+        for(auto& reg: partitionArea(3))
+            rc.push_back(renderAsync(reg.first, reg.second));
 
-        auto tl = std::async(std::launch::deferred, &EscapeTimeRenderer::renderSection, this, 0, 0, midw, midh);
-        auto tr = std::async(std::launch::async, &EscapeTimeRenderer::renderSection, this, midw, 0, w, midh);
-        auto bl = std::async(std::launch::async, &EscapeTimeRenderer::renderSection, this, 0, midh, midw, h);
-        auto br = std::async(std::launch::async, &EscapeTimeRenderer::renderSection, this, midw, midh, w, h);
-
-        T area = tl.get();
-        area += bl.get();
-        area += tr.get();
-        area += br.get();
-#endif
+        T area = 0;
+        for (auto &res: rc)
+            area += res.get();
         auto stop = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
-        std::cout<<"area is "<<area<<" duration is "<<duration<<" ms"<<std::endl;
+        return std::pair<T,T>(area, duration);
     }
     void updateFactory(std::function<DynamicalSystem<T> *()> f) { factory = f; }
     void setSurface(OffscreenSurface *s) { surface = s; }
+    
 private:
+    /* Bounding box*/
     Complex<T> topleft,bottomright;
+    
     OffscreenSurface *surface;
+    /* Renderer parameters*/
     unsigned numIterations;
+    /* The system itself*/
     std::function< DynamicalSystem<T> *()> factory;
 };
 
