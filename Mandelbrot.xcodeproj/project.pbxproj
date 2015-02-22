@@ -12,6 +12,10 @@
 		C4B99B431A8862C5008500B9 /* GLUTWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C4B99B421A8862C5008500B9 /* GLUTWrapper.cpp */; settings = {COMPILER_FLAGS = " -Wno-deprecated-declarations"; }; };
 		C4B99B461A8873DE008500B9 /* OffsceenSurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C4B99B441A8873DE008500B9 /* OffsceenSurface.cpp */; };
 		C4B99B4B1A8A54DA008500B9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B99B4A1A8A54DA008500B9 /* OpenGL.framework */; };
+		C4B99B4D1A95BE24008500B9 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B99B4C1A95BE24008500B9 /* CoreFoundation.framework */; };
+		C4B99B4F1A95C0B1008500B9 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B99B4E1A95C0B1008500B9 /* ImageIO.framework */; };
+		C4B99B511A95C0B7008500B9 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B99B501A95C0B7008500B9 /* CoreServices.framework */; };
+		C4B99B531A95C225008500B9 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B99B521A95C225008500B9 /* CoreGraphics.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +41,10 @@
 		C4B99B451A8873DE008500B9 /* OffsceenSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OffsceenSurface.h; sourceTree = "<group>"; };
 		C4B99B481A89C56C008500B9 /* EscapeTimeRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EscapeTimeRenderer.h; sourceTree = "<group>"; };
 		C4B99B4A1A8A54DA008500B9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		C4B99B4C1A95BE24008500B9 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		C4B99B4E1A95C0B1008500B9 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		C4B99B501A95C0B7008500B9 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		C4B99B521A95C225008500B9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +52,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4B99B531A95C225008500B9 /* CoreGraphics.framework in Frameworks */,
+				C4B99B511A95C0B7008500B9 /* CoreServices.framework in Frameworks */,
+				C4B99B4F1A95C0B1008500B9 /* ImageIO.framework in Frameworks */,
+				C4B99B4D1A95BE24008500B9 /* CoreFoundation.framework in Frameworks */,
 				C4B99B4B1A8A54DA008500B9 /* OpenGL.framework in Frameworks */,
 				C4B99B3F1A885F9D008500B9 /* GLUT.framework in Frameworks */,
 			);
@@ -55,6 +67,10 @@
 		C4B99B2B1A885F77008500B9 = {
 			isa = PBXGroup;
 			children = (
+				C4B99B521A95C225008500B9 /* CoreGraphics.framework */,
+				C4B99B501A95C0B7008500B9 /* CoreServices.framework */,
+				C4B99B4E1A95C0B1008500B9 /* ImageIO.framework */,
+				C4B99B4C1A95BE24008500B9 /* CoreFoundation.framework */,
 				C4B99B4A1A8A54DA008500B9 /* OpenGL.framework */,
 				C4B99B3E1A885F9D008500B9 /* GLUT.framework */,
 				C4B99B361A885F77008500B9 /* Mandelbrot */,

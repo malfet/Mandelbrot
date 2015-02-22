@@ -101,6 +101,10 @@ void drawQuad(float x=0.0,float y=0.0, float w=1.0, float h=1.0, float z = -10.0
     glEnd();
 }
 
+std::string getHomeFolder() {
+    const char *homeDir = getenv("HOME");
+    return std::string(homeDir);
+}
 
 class MandelPowerDemo {
 public:
@@ -126,6 +130,18 @@ private:
         if (p < 1.0 || p > 5.0) dp *= -1;
     }
     
+    void saveImage() {
+        std::ostringstream ss;
+        ss<<getHomeFolder()<<"/Mandel-results/pow(x,"<<p<<").png";
+        surface->saveToPNG(ss.str());
+    }
+    
+    void updateTitle(float area, float time) {
+        std::ostringstream ss;
+        ss<<"x=pow(x,"<<p<<")+c area="<<area<<" time="<<time<<" ms";
+        wrapper->setWindowTitle(ss.str());
+    }
+    
     void display() {
         if (!surface || !renderer) return;
         copyToTexture(surface,13);
@@ -134,9 +150,8 @@ private:
 
         if (renderResult.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return;
         auto rc = renderResult.get();
-        std::ostringstream ss;
-        ss<<"x=pow(x,"<<p<<")+c area="<<rc.first<<" time="<<rc.second<<" ms";
-        wrapper->setWindowTitle(ss.str());
+        updateTitle(rc.first, rc.second);
+        saveImage();
         startRenderer();
     }
     
@@ -169,7 +184,7 @@ int main(int argc, const char *argv[]) {
     GLUTWrapper wrapper(&argc, (char **)argv);
     MandelPowerDemo demo(&wrapper);
     
-    wrapper.init(640, 480);
+    wrapper.init(1080, 1080);
     wrapper.run();
     return 0;
 }

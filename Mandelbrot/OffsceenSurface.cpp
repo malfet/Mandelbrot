@@ -78,3 +78,32 @@ void OffscreenSurface::clear()
 {
     memset(rgb, 0, 3*width*height);
 }
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <ImageIO/ImageIO.h>
+#include <CoreServices/CoreServices.h>
+
+static bool saveImageToPNG(const char *fName, CGImageRef image)
+{
+    CFStringRef cfName = CFStringCreateWithCString(NULL, fName, kCFStringEncodingASCII);
+    CFURLRef cfUrl = CFURLCreateWithFileSystemPath(NULL, cfName, kCFURLPOSIXPathStyle, false);
+    CGImageDestinationRef destImage = CGImageDestinationCreateWithURL(cfUrl, kUTTypePNG , 1, NULL);
+    CGImageDestinationAddImage(destImage, image, NULL);
+    bool rc = CGImageDestinationFinalize(destImage);
+    CFRelease(destImage);
+    CFRelease(cfUrl);
+    CFRelease(cfName);
+    return rc;
+}
+
+void OffscreenSurface::saveToPNG(const std::string &name)
+{
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, rgb, 3*width*height, NULL);
+    CGImageRef imageRef = CGImageCreate(width, height, 8, 24, 3*width, colorSpace, kCGBitmapByteOrderDefault, data, NULL, false, kCGRenderingIntentDefault);
+    saveImageToPNG(name.data(), imageRef);
+    CGDataProviderRelease(data);
+    CGColorSpaceRelease(colorSpace);
+    CGImageRelease(imageRef);
+    CFRelease(imageRef);
+}
