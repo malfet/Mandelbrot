@@ -160,8 +160,10 @@ private:
     
     void saveImage() {
         std::ostringstream ss;
-        ss<<getHomeFolder()<<"/Mandel-results/pow(x,"<<p<<").png";
-        surface->saveToPNG(ss.str());
+        ss<<getHomeFolder()<<"/Mandel-results/pow(x,"<<p<<").jpg";
+        //surface->saveToPNG(ss.str());
+        surface->saveToJPEG(ss.str());
+
     }
     void savePalette() {
         std::ostringstream ss;

@@ -165,12 +165,38 @@ static bool saveImageToPNG(const char *fName, CGImageRef image)
     return rc;
 }
 
+static bool saveImageToJPEG(const char *fName, CGImageRef image)
+{
+    CFStringRef cfName = CFStringCreateWithCString(NULL, fName, kCFStringEncodingASCII);
+    CFURLRef cfUrl = CFURLCreateWithFileSystemPath(NULL, cfName, kCFURLPOSIXPathStyle, false);
+    CGImageDestinationRef destImage = CGImageDestinationCreateWithURL(cfUrl, kUTTypeJPEG , 1, NULL);
+    CGImageDestinationAddImage(destImage, image, NULL);
+    bool rc = CGImageDestinationFinalize(destImage);
+    CFRelease(destImage);
+    CFRelease(cfUrl);
+    CFRelease(cfName);
+    return rc;
+}
+
+
 void OffscreenSurface::saveToPNG(const std::string &name)
 {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGDataProviderRef data = CGDataProviderCreateWithData(NULL, rgb, 3*width*height, NULL);
     CGImageRef imageRef = CGImageCreate(width, height, 8, 24, 3*width, colorSpace, kCGBitmapByteOrderDefault, data, NULL, false, kCGRenderingIntentDefault);
     saveImageToPNG(name.data(), imageRef);
+    CGDataProviderRelease(data);
+    CGColorSpaceRelease(colorSpace);
+    CGImageRelease(imageRef);
+    CFRelease(imageRef);
+}
+
+void OffscreenSurface::saveToJPEG(const std::string &name)
+{
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, rgb, 3*width*height, NULL);
+    CGImageRef imageRef = CGImageCreate(width, height, 8, 24, 3*width, colorSpace, kCGBitmapByteOrderDefault, data, NULL, false, kCGRenderingIntentDefault);
+    saveImageToJPEG(name.data(), imageRef);
     CGDataProviderRelease(data);
     CGColorSpaceRelease(colorSpace);
     CGImageRelease(imageRef);

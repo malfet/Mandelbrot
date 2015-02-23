@@ -68,6 +68,7 @@ private:
 class OffscreenSurface {
 public:
     void saveToPNG(const std::string &name);
+    void saveToJPEG(const std::string &name);
     OffscreenSurface(unsigned, unsigned);
     OffscreenSurface(unsigned, unsigned, Palette &p);
     ~OffscreenSurface();
