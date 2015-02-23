@@ -37,8 +37,13 @@ class Palette {
 public:
     Palette(unsigned size=256):data(size) {randomize();}
     size_t size() { return data.size();}
-    void randomize(void);
     RGB<unsigned char >& operator[](size_t idx);
+    void save(const std::string &name);
+    void load(const std::string &name);
+    void randomize();
+    /* Generate a palette with fixed luma and minimum distance between UV components*/
+    void randomizeUV(unsigned char Y, unsigned distance=80);
+
 private:
     std::vector< RGB<unsigned char> > data;
 };
