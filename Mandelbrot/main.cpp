@@ -11,6 +11,15 @@
 #include <OpenGL/gl.h>
 #include <thread>
 #include <sstream>
+#include "vgapalette.h"
+
+Palette BuildVGAPalette()
+{
+    Palette rc;
+    for (unsigned i=0;i<256;++i)
+        rc[i] =  RGB<unsigned char>((vga_palette[i]>>16)&0xff, (vga_palette[i]>>8)&0xff,vga_palette[i]&0xff);
+    return rc;
+}
 
 template<typename T> class PolynomialDynamicalSystem: public DynamicalSystem<T> {
 public:
@@ -108,7 +117,8 @@ std::string getHomeFolder() {
 
 class MandelPowerDemo {
 public:
-    MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.001) {
+    MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.005) {
+        palette = BuildVGAPalette();
         wrapper->setDisplayFunc(std::bind(&MandelPowerDemo::display,this));
         wrapper->setReshapeFunc(std::bind(&MandelPowerDemo::reshape, this, std::placeholders::_1, std::placeholders::_2));
     }
@@ -128,12 +138,18 @@ private:
     void updatePower() {
         p += dp;
         if (p < 1.0 || p > 5.0) dp *= -1;
+        if (p>5.0) wrapper->quit();
     }
     
     void saveImage() {
         std::ostringstream ss;
         ss<<getHomeFolder()<<"/Mandel-results/pow(x,"<<p<<").png";
         surface->saveToPNG(ss.str());
+    }
+    void savePalette() {
+        std::ostringstream ss;
+        ss<<getHomeFolder()<<"/Mandel-results/palette.dat";
+        palette.save(ss.str());
     }
     
     void updateTitle(float area, float time) {

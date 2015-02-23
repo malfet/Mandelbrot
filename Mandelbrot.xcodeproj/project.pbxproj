@@ -45,6 +45,7 @@
 		C4B99B4E1A95C0B1008500B9 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		C4B99B501A95C0B7008500B9 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		C4B99B521A95C225008500B9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		C4B99B541A9B1722008500B9 /* vgapalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vgapalette.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +97,7 @@
 				C4B99B421A8862C5008500B9 /* GLUTWrapper.cpp */,
 				C4B99B481A89C56C008500B9 /* EscapeTimeRenderer.h */,
 				C4B99B401A885FB9008500B9 /* complex.h */,
+				C4B99B541A9B1722008500B9 /* vgapalette.h */,
 			);
 			path = Mandelbrot;
 			sourceTree = "<group>";

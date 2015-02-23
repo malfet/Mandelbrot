@@ -32,7 +32,7 @@ public:
     {
         topleft = Complex<T>(-2,-2);
         bottomright = Complex<T>(2,2);
-        numIterations = 200;
+        numIterations = 256;
     }
     
     T computeEscapeTime(DynamicalSystem<T> *sys, const Complex<T> &c) {
