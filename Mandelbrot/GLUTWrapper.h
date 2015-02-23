@@ -17,6 +17,7 @@ public:
     void printDisplayDimentions();
     void init(int, int);
     void run();
+    void quit();
     void setWindowTitle(const std::string &);
     void setDisplayFunc(std::function<void()> f) { displayFunc = f;}
     void setReshapeFunc(std::function<void(int,int)> f) { reshapeFunc = f;}
@@ -28,6 +29,7 @@ private:
     std::function<void(int,int)> reshapeFunc;
     static GLUTWrapper *self;
     int winWidth, winHeight;
+    int winId;
 };
 
 #endif

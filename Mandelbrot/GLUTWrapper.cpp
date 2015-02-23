@@ -25,7 +25,7 @@ GLUTWrapper::GLUTWrapper(int *argc, char **argv) {
 void GLUTWrapper::init(int width, int height) {
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(width, height);
-    glutCreateWindow("Window");
+    winId = glutCreateWindow("Window");
     glutDisplayFunc(GLUTWrapper::display);
     glutReshapeFunc(GLUTWrapper::reshape);
     
@@ -51,4 +51,9 @@ void GLUTWrapper::display()
 {
     self->displayFunc();
     glutSwapBuffers();
+}
+
+void GLUTWrapper::quit()
+{
+    glutDestroyWindow(winId);
 }
