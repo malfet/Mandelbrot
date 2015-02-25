@@ -41,15 +41,15 @@ Palette BuildVGAPalette()
 template<typename T> class PolynomialDynamicalSystem: public DynamicalSystem<T> {
 public:
     PolynomialDynamicalSystem(): x(0,0), c(0,0) {}
-    PolynomialDynamicalSystem(Complex<T> _c): x(0,0), c(_c) {}
+    PolynomialDynamicalSystem(std::complex<T> _c): x(0,0), c(_c) {}
     PolynomialDynamicalSystem(T re, T im): x(0,0), c(re,im) {}
 
-    Complex<T> step() {
+    std::complex<T> step() {
         return x = x*x + c;
     }
-    Complex<T> getVal() { return x; }
+    std::complex<T> getVal() { return x; }
 protected:
-    Complex<T> x,c;
+    std::complex<T> x,c;
 };
 
 template<typename T> class Mandelbrot:  public PolynomialDynamicalSystem<T> {
@@ -57,7 +57,7 @@ template<typename T> class Mandelbrot:  public PolynomialDynamicalSystem<T> {
     using PolynomialDynamicalSystem<T>::x;
 
 public:
-    void init(Complex<T> _c) {
+    void init(std::complex<T> _c) {
         c = _c;
         x.re = x.im = 0;
     }
@@ -66,22 +66,22 @@ public:
 template<typename T> class Julia:  public PolynomialDynamicalSystem<T> {
     using PolynomialDynamicalSystem<T>::x;
 public:
-    void init(Complex<T> _x) { x = _x; }
+    void init(std::complex<T> _x) { x = _x; }
 };
 
 template<typename T> class MandelPower: public DynamicalSystem<T> {
 public:
     MandelPower(T _p):x(0,0),c(0,0),p(_p) {}
 
-    void init(Complex<T> _c) { c = _c; x.re = x.im = 0;}
+    void init(std::complex<T> _c) { c = _c; x = 0; }
     
-    Complex<T> step() {
+    std::complex<T> step() {
         return x = pow(x,p) + c;
         
     }
-    Complex<T> getVal() { return x; }
+    std::complex<T> getVal() { return x; }
 private:
-    Complex<T> x,c;
+    std::complex<T> x,c;
     T p;
 };
 

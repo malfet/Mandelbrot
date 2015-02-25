@@ -28,7 +28,7 @@
 #include <functional>
 #include <chrono>
 #include <future>
-#include "complex.h"
+#include <complex>
 #include "OffsceenSurface.h"
 
 
@@ -36,9 +36,9 @@
 template<typename T> class DynamicalSystem {
 public:
     virtual ~DynamicalSystem() {}
-    virtual void init(Complex<T> c) = 0;
-    virtual Complex<T> step() = 0;
-    virtual Complex<T> getVal() = 0;
+    virtual void init(std::complex<T> c) = 0;
+    virtual std::complex<T> step() = 0;
+    virtual std::complex<T> getVal() = 0;
 };
 
 
@@ -47,18 +47,18 @@ public:
     
     EscapeTimeRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): surface(s), factory(f)
     {
-        topleft = Complex<T>(-2,-2);
-        bottomright = Complex<T>(2,2);
+        topleft = std::complex<T>(-2,-2);
+        bottomright = std::complex<T>(2,2);
         numIterations = 256;
     }
     
-    T computeEscapeTime(DynamicalSystem<T> *sys, const Complex<T> &c) {
+    T computeEscapeTime(DynamicalSystem<T> *sys, const std::complex<T> &c) {
         sys->init(c);
         for (unsigned steps(0); steps < numIterations; ++steps) {
             auto x = sys->step();
-            if (x.mod2() > 4.0) {
+            if (norm(x) > 4.0) {
                 if (steps == 0) return 0;
-                return steps + 1 - (log (log (x.mod2()))/log(2));
+                return steps + 1 - (log (log (norm(x)))/log(2));
             }
         }
         return numIterations;
@@ -69,14 +69,14 @@ private:
     T renderSection(unsigned sx, unsigned sy, unsigned ex, unsigned ey) {
         auto w = surface->getWidth();
         auto h = surface->getHeight();
-        Complex<T> stepx((bottomright.re-topleft.re)/w,0);
-        Complex<T> stepy(0, (bottomright.im-topleft.im)/h);
+        std::complex<T> stepx((bottomright.real()-topleft.real())/w,0);
+        std::complex<T> stepy(0, (bottomright.imag()-topleft.imag())/h);
         DynamicalSystem<T> *sys = factory();
-        auto pixelArea = stepx.re*stepy.im;
+        auto pixelArea = stepx.real()*stepy.imag();
         T rc = 0;
         for(unsigned y(sy);y<ey; ++y)
             for(unsigned x(sx); x<ex; ++x) {
-                T c = computeEscapeTime(sys, topleft + y*stepy + x*stepx);
+                T c = computeEscapeTime(sys, topleft + ((T)y)*stepy + ((T)x)*stepx);
                 if (c >= numIterations) {
                     rc += pixelArea;
                     surface->putPixel(x, y, 0, 0, 0);
@@ -136,7 +136,7 @@ public:
     
 private:
     /* Bounding box*/
-    Complex<T> topleft,bottomright;
+    std::complex<T> topleft,bottomright;
     
     OffscreenSurface *surface;
     /* Renderer parameters*/
