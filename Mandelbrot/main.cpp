@@ -69,9 +69,9 @@ public:
     void init(std::complex<T> _x) { x = _x; }
 };
 
-template<typename T> class MandelPower: public DynamicalSystem<T> {
+template<typename T> class Multibrot: public DynamicalSystem<T> {
 public:
-    MandelPower(T _p):x(0,0),c(0,0),p(_p) {}
+    Multibrot(T _p):x(0,0),c(0,0),p(_p) {}
 
     void init(std::complex<T> _c) { c = _c; x = 0; }
     
@@ -132,20 +132,21 @@ std::string getHomeFolder() {
     return std::string(homeDir);
 }
 
-class MandelPowerDemo {
+template<typename T>
+class MultibrotDemo {
 public:
-    MandelPowerDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.005) {
+    MultibrotDemo(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL), p(1.0),dp(.005) {
         palette = BuildVGAPalette();
-        wrapper->setDisplayFunc(std::bind(&MandelPowerDemo::display,this));
-        wrapper->setReshapeFunc(std::bind(&MandelPowerDemo::reshape, this, std::placeholders::_1, std::placeholders::_2));
+        wrapper->setDisplayFunc(std::bind(&MultibrotDemo::display,this));
+        wrapper->setReshapeFunc(std::bind(&MultibrotDemo::reshape, this, std::placeholders::_1, std::placeholders::_2));
     }
 private:
-    std::function<DynamicalSystem<float> *()> getFactory() { return [&] { return new MandelPower<float>(p); }; }
+    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Multibrot<T>(p); }; }
 
     void startRenderer() {
         updatePower();
         //std::packaged_task<std::pair<float,float>()> tsk(std::bind(&EscapeTimeRenderer<float>::render, renderer));
-        std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<float> *)> tsk(&EscapeTimeRenderer<float>::render);
+        std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<T> *)> tsk(&EscapeTimeRenderer<T>::render);
 
         renderResult = tsk.get_future();
         std::thread taskThread(std::move(tsk), renderer);
@@ -211,13 +212,13 @@ private:
     Palette palette;
     GLUTWrapper *wrapper;
     OffscreenSurface *surface;
-    EscapeTimeRenderer<float> *renderer;
-    float p, dp;
+    EscapeTimeRenderer<T> *renderer;
+    T p, dp;
 };
 
 int main(int argc, const char *argv[]) {
     GLUTWrapper wrapper(&argc, (char **)argv);
-    MandelPowerDemo demo(&wrapper);
+    MultibrotDemo<float> demo(&wrapper);
     
     wrapper.init(1080, 1080);
     wrapper.run();
