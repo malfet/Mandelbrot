@@ -38,12 +38,17 @@ public:
     void setWindowTitle(const std::string &);
     void setDisplayFunc(std::function<void()> f) { displayFunc = f;}
     void setReshapeFunc(std::function<void(int,int)> f) { reshapeFunc = f;}
+    void setMouseFunc(std::function<void(int,int,unsigned)> f) { mouseFunc = f;}
     void redisplay();
 private:
+    unsigned mouseButtons;
     static void display();
     static void reshape(int w, int h) { self->reshapeFunc(w,h);}
+    static void mouse(int b, int s, int x,int y);
+    static void motion(int x, int y);
     std::function<void()> displayFunc;
     std::function<void(int,int)> reshapeFunc;
+    std::function<void(int,int,unsigned)> mouseFunc;
     static GLUTWrapper *self;
     int winWidth, winHeight;
     int winId;

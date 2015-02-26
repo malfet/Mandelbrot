@@ -52,7 +52,7 @@ public:
         numIterations = 256;
     }
     
-    T computeEscapeTime(DynamicalSystem<T> *sys, const std::complex<T> &c) {
+    float computeEscapeTime(DynamicalSystem<T> *sys, const std::complex<T> &c) {
         sys->init(c);
         for (unsigned steps(0); steps < numIterations; ++steps) {
             auto x = sys->step();
@@ -71,18 +71,19 @@ private:
         auto h = surface->getHeight();
         std::complex<T> stepx((bottomright.real()-topleft.real())/w,0);
         std::complex<T> stepy(0, (bottomright.imag()-topleft.imag())/h);
+        float invIterations = 1.f/numIterations;
         DynamicalSystem<T> *sys = factory();
         auto pixelArea = stepx.real()*stepy.imag();
         T rc = 0;
         for(unsigned y(sy);y<ey; ++y)
             for(unsigned x(sx); x<ex; ++x) {
-                T c = computeEscapeTime(sys, topleft + ((T)y)*stepy + ((T)x)*stepx);
+                float c = computeEscapeTime(sys, topleft + ((T)y)*stepy + ((T)x)*stepx);
                 if (c >= numIterations) {
                     rc += pixelArea;
                     surface->putPixel(x, y, 0, 0, 0);
                     continue;
                 }
-                surface->putPixel(x, y, c);
+                surface->putPixel(x, y, c*invIterations);
             }
         delete sys;
         return rc;
@@ -133,6 +134,9 @@ public:
     }
     void updateFactory(std::function<DynamicalSystem<T> *()> f) { factory = f; }
     void setSurface(OffscreenSurface *s) { surface = s; }
+    void setBounds(std::complex<T> tl, std::complex<T> br) { topleft = tl; bottomright = br; }
+    void setIterations(unsigned it) { numIterations = it; }
+    unsigned getIterations() { return numIterations;}
     
 private:
     /* Bounding box*/

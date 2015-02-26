@@ -108,7 +108,7 @@ OffscreenSurface::OffscreenSurface(unsigned w, unsigned h, Palette &p):width(w),
 }
 
 
-void OffscreenSurface::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b)
+void OffscreenSurface::putPixel(unsigned x, unsigned y, unsigned char r, unsigned char g, unsigned char b)
 {
     auto offs = (y*width+x)*3;
     rgb[offs+0] = r;
@@ -116,18 +116,19 @@ void OffscreenSurface::putPixel(int x, int y, unsigned char r, unsigned char g, 
     rgb[offs+2] = b;
 }
 
-void OffscreenSurface::putPixel(int x, int y, RGB<unsigned char> c)
+void OffscreenSurface::putPixel(unsigned x, unsigned y, RGB<unsigned char> c)
 {
     putPixel(x,y,c.getR(), c.getG(), c.getB());
 }
 
-void OffscreenSurface::putPixel(int x, int y, unsigned idx)
+void OffscreenSurface::putPixel(unsigned x, unsigned y, unsigned idx)
 {
     putPixel(x,y, palette[idx]);
 }
 
-void OffscreenSurface::putPixel(int x, int y, float val)
+void OffscreenSurface::putPixel(unsigned x, unsigned y, float val)
 {
+    val *= palette.size();
     unsigned idx = unsigned(floor(val));
     if (idx >= palette.size()-1) {
         putPixel(x,y, palette[palette.size()-1]);

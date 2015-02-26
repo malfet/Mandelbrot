@@ -42,6 +42,7 @@ GLUTWrapper::GLUTWrapper(int *argc, char **argv) {
     self = this;
     displayFunc = [] {};
     reshapeFunc = [](int w,int h) {};
+    mouseFunc = [](int x, int y, unsigned b) {};
     glutInit (argc, argv);
 }
 
@@ -51,6 +52,8 @@ void GLUTWrapper::init(int width, int height) {
     winId = glutCreateWindow("Window");
     glutDisplayFunc(GLUTWrapper::display);
     glutReshapeFunc(GLUTWrapper::reshape);
+    glutMouseFunc(GLUTWrapper::mouse);
+    glutMotionFunc(GLUTWrapper::motion);
 }
 
 void GLUTWrapper::run()
@@ -78,4 +81,21 @@ void GLUTWrapper::display()
 void GLUTWrapper::quit()
 {
     glutDestroyWindow(winId);
+    exit(0);
+}
+
+
+void GLUTWrapper::mouse(int b, int s, int x, int y)
+{
+    if (b == GLUT_LEFT_BUTTON && s == GLUT_UP) self->mouseButtons &= ~1;
+    if (b == GLUT_LEFT_BUTTON && s == GLUT_DOWN) self->mouseButtons |= 1;
+    if (b == GLUT_RIGHT_BUTTON && s == GLUT_DOWN) self->mouseButtons |= 2;
+    if (b == GLUT_RIGHT_BUTTON && s == GLUT_UP) self->mouseButtons &= ~2;
+
+    self->mouseFunc(x,y, self->mouseButtons);
+}
+
+void GLUTWrapper::motion(int x, int y)
+{
+    self->mouseFunc(x,y, self->mouseButtons);
 }

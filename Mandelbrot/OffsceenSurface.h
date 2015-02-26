@@ -76,10 +76,11 @@ public:
     inline unsigned getHeight() { return height; }
     inline unsigned char *getData() { return rgb;}
     void clear();
-    void putPixel(int x, int y, RGB<unsigned char> c);
-    void putPixel(int,int, unsigned char, unsigned char, unsigned char);
-    void putPixel(int, int, unsigned);
-    void putPixel(int, int, float);
+    void putPixel(unsigned x, unsigned y, RGB<unsigned char> c);
+    void putPixel(unsigned, unsigned, unsigned char, unsigned char, unsigned char);
+    void putPixel(unsigned, unsigned, unsigned);
+    /* Put pixel using color from the palette normalised to 0..1 range*/
+    void putPixel(unsigned, unsigned, float);
     void setPalette(const Palette &p) {palette = p;}
 private:
     unsigned width,height;

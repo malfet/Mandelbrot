@@ -28,6 +28,7 @@
 #include <OpenGL/gl.h>
 #include <thread>
 #include <sstream>
+#include <iostream>
 #include "vgapalette.h"
 
 Palette BuildVGAPalette()
@@ -59,7 +60,7 @@ template<typename T> class Mandelbrot:  public PolynomialDynamicalSystem<T> {
 public:
     void init(std::complex<T> _c) {
         c = _c;
-        x.re = x.im = 0;
+        x = 0;
     }
 };
 
@@ -89,7 +90,7 @@ void glConfigureCamera(int width, int height) {
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho (0,1, 0, 1, .2, 999999.0);
+    glOrtho (0,1, 1, 0, .2, 999999.0);
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -100,7 +101,9 @@ void glInit() {
     glShadeModel(GL_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable (GL_TEXTURE_2D);
+    glLineWidth(5.f);
 }
+
 void copyToTexture(OffscreenSurface *s, int texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -123,14 +126,31 @@ void drawQuad(float x=0.0,float y=0.0, float w=1.0, float h=1.0, float z = -10.0
     glVertex3f (x+w, y+h, z);
     glTexCoord2f (x+w, y);
     glVertex3f (x+w, y, z);
-
     glEnd();
+}
+
+typedef std::pair<float,float> point;
+
+void drawRect(float sx, float sy, float ex, float ey, float z = -9.0)
+{
+    glBegin(GL_LINE_LOOP);
+    glVertex3f (sx, sy, z);
+    glVertex3f (ex, sy, z);
+    glVertex3f (ex, ey, z);
+    glVertex3f (sx, ey, z);
+    glEnd();
+}
+void drawRect(point start, point end, float z = -9.0)
+{
+    drawRect(start.first, start.second, end.first, end.second);
 }
 
 std::string getHomeFolder() {
     const char *homeDir = getenv("HOME");
     return std::string(homeDir);
 }
+
+
 
 template<typename T>
 class MultibrotDemo {
@@ -199,7 +219,7 @@ private:
         OffscreenSurface *oldSurface = surface;
         surface = new OffscreenSurface(w,h, palette);
         if (renderer == NULL) {
-            renderer = new EscapeTimeRenderer<float>(surface, getFactory());
+            renderer = new EscapeTimeRenderer<T>(surface, getFactory());
             startRenderer();
         } else {
             renderResult.wait();
@@ -216,9 +236,145 @@ private:
     T p, dp;
 };
 
+template<typename T>
+class ZoomInViewer {
+public:
+    ZoomInViewer(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL) {
+        topLeft = std::complex<T>(-2,-2);
+        bottomRight = std::complex<T>(2,2);
+        numIterations = 256;
+        palette = BuildVGAPalette();
+        mouseDown = false;
+        wrapper->setDisplayFunc(std::bind(&ZoomInViewer::display,this));
+        wrapper->setReshapeFunc(std::bind(&ZoomInViewer::reshape, this, std::placeholders::_1, std::placeholders::_2));
+        wrapper->setMouseFunc(std::bind(&ZoomInViewer::mouse, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    }
+    
+    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
+
+    void reshape(int w, int h) {
+        
+        glInit();
+        glConfigureCamera(w, h);
+        
+        OffscreenSurface *oldSurface = surface;
+        surface = new OffscreenSurface(w,h, palette);
+        if (renderer == NULL) {
+            renderer = new EscapeTimeRenderer<T>(surface, getFactory());
+        } else {
+            if (renderResult.valid())
+                renderResult.wait();
+            renderer->setSurface(surface);
+        }
+        delete oldSurface;
+        startRenderer();
+
+    }
+    
+    void display() {
+        if (!surface || !renderer) return;
+        copyToTexture(surface,13);
+        glColor3f(1.0f,1.0f, 1.0f);
+        drawQuad();
+        if (mouseDown) {
+            glColor3f(1.0f,1.0f, 0.f);
+            drawRect(start, end);
+        }
+        
+        if (!renderResult.valid())
+            return;
+        if (renderResult.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+            wrapper->redisplay();
+            return;
+        }
+        
+        auto rc = renderResult.get();
+        updateTitle(rc.first, rc.second);
+        if (numIterations < 10000) {
+            numIterations *= 1.1;
+            startRenderer();
+        }
+    }
+    
+    
+    std::complex<T> pointToSurface(point p) {
+        T stepX = (bottomRight.real()-topLeft.real());
+        T stepY = (bottomRight.imag()-topLeft.imag());
+        return topLeft + std::complex<T>(stepX*p.first,stepY*p.second);
+    }
+    
+    point screenToPoint(unsigned x, unsigned y) {
+        return point(((float)x)/surface->getWidth(), ((float)y)/surface->getHeight());
+    }
+    
+    void mouse(int x, int y, unsigned button)
+    {
+        if (!mouseDown) {
+            end = start = screenToPoint(x,y);
+        } else {
+            float ratio = (float)surface->getWidth()/surface->getHeight();
+            end = screenToPoint(x,y);
+            float w = end.first-start.first;
+            float h = end.second-start.second;
+            float rw = std::max(w,h*ratio);
+            end.first = start.first+rw;
+            end.second = start.second+(rw/ratio);
+        }
+        
+        if (mouseDown && button == 0) {
+            auto tl  = pointToSurface(start);
+            auto br = pointToSurface(end);
+            topLeft = tl;
+            bottomRight = br;
+            numIterations = 256;
+            startRenderer();
+        }
+        mouseDown = button != 0;
+
+        wrapper->redisplay();
+        
+    }
+    
+    void startRenderer() {
+        std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<T> *)> tsk(&EscapeTimeRenderer<T>::render);
+        
+        if (renderResult.valid())
+            renderResult.wait();
+
+        renderer->setBounds(topLeft, bottomRight);
+        renderer->setIterations(numIterations);
+
+        renderResult = tsk.get_future();
+        std::thread taskThread(std::move(tsk), renderer);
+        taskThread.detach();
+        wrapper->redisplay();
+
+    }
+    
+    void updateTitle(float area, float time) {
+        std::ostringstream ss;
+        ss<<"Mandelbrot "<<topLeft<<"-"<<bottomRight<<": iterations="<<numIterations<<" area="<<area<<" time="<<time<<" ms";
+        wrapper->setWindowTitle(ss.str());
+    }
+    
+    
+private:
+    std::future<std::pair<float,float> > renderResult;
+    Palette palette;
+    GLUTWrapper *wrapper;
+    OffscreenSurface *surface;
+    EscapeTimeRenderer<T> *renderer;
+    std::complex<T> topLeft, bottomRight;
+    unsigned numIterations;
+    point start, end;
+    bool mouseDown;
+
+};
+
 int main(int argc, const char *argv[]) {
     GLUTWrapper wrapper(&argc, (char **)argv);
-    MultibrotDemo<float> demo(&wrapper);
+    ZoomInViewer<double> demo(&wrapper);
     
     wrapper.init(1080, 1080);
     wrapper.run();
