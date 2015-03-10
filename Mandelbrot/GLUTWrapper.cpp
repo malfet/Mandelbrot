@@ -23,7 +23,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef __APPLE__
 #include <GLUT/glut.h>
+#else
+#include <GL/freeglut.h>
+#endif
 #include <iostream>
 #include <assert.h>
 #include "GLUTWrapper.h"
