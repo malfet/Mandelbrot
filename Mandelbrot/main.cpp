@@ -67,6 +67,7 @@ public:
 template<typename T> class Julia:  public PolynomialDynamicalSystem<T> {
     using PolynomialDynamicalSystem<T>::x;
 public:
+    Julia(T re, T im): PolynomialDynamicalSystem<T>(re,im) {}
     void init(std::complex<T> _x) { x = _x; }
 };
 
@@ -251,7 +252,9 @@ public:
 
     }
     
+    //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Julia<T>((T)-0.77568377, (T)0.13646737); }; }
     std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
+
 
     void reshape(int w, int h) {
         
