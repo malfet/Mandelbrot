@@ -34,7 +34,6 @@
 		C4B99B341A885F77008500B9 /* Mandelbrot */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Mandelbrot; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4B99B371A885F77008500B9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		C4B99B3E1A885F9D008500B9 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		C4B99B401A885FB9008500B9 /* complex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = complex.h; sourceTree = "<group>"; };
 		C4B99B411A88628E008500B9 /* GLUTWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GLUTWrapper.h; sourceTree = "<group>"; };
 		C4B99B421A8862C5008500B9 /* GLUTWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLUTWrapper.cpp; sourceTree = "<group>"; };
 		C4B99B441A8873DE008500B9 /* OffsceenSurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OffsceenSurface.cpp; sourceTree = "<group>"; };
@@ -46,6 +45,7 @@
 		C4B99B501A95C0B7008500B9 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		C4B99B521A95C225008500B9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		C4B99B541A9B1722008500B9 /* vgapalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vgapalette.h; sourceTree = "<group>"; };
+		C4F2D0A01AEC5A10000F6B31 /* Polynomial.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Polynomial.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,12 +91,12 @@
 			isa = PBXGroup;
 			children = (
 				C4B99B371A885F77008500B9 /* main.cpp */,
+				C4F2D0A01AEC5A10000F6B31 /* Polynomial.h */,
 				C4B99B441A8873DE008500B9 /* OffsceenSurface.cpp */,
 				C4B99B451A8873DE008500B9 /* OffsceenSurface.h */,
 				C4B99B411A88628E008500B9 /* GLUTWrapper.h */,
 				C4B99B421A8862C5008500B9 /* GLUTWrapper.cpp */,
 				C4B99B481A89C56C008500B9 /* EscapeTimeRenderer.h */,
-				C4B99B401A885FB9008500B9 /* complex.h */,
 				C4B99B541A9B1722008500B9 /* vgapalette.h */,
 			);
 			path = Mandelbrot;
@@ -274,6 +274,7 @@
 				C4B99B3D1A885F77008500B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
