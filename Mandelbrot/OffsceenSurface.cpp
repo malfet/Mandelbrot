@@ -26,6 +26,7 @@
 #include "OffsceenSurface.h"
 #include <random>
 #include <assert.h>
+#include <string.h>
 #include <fstream>
 
 void Palette::save(const std::string &name)
@@ -149,6 +150,7 @@ void OffscreenSurface::clear()
     memset(rgb, 0, 3*width*height);
 }
 
+#ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
 #include <ImageIO/ImageIO.h>
 #include <CoreServices/CoreServices.h>
@@ -203,3 +205,12 @@ void OffscreenSurface::saveToJPEG(const std::string &name)
     CGImageRelease(imageRef);
     CFRelease(imageRef);
 }
+#else
+void OffscreenSurface::saveToPNG(const std::string &name)
+{
+}
+
+void OffscreenSurface::saveToJPEG(const std::string &name)
+{
+}
+#endif

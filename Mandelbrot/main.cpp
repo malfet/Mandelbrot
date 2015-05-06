@@ -25,7 +25,11 @@
 
 #include "GLUTWrapper.h"
 #include "EscapeTimeRenderer.h"
+#ifdef __APPLE__
 #include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 #include <thread>
 #include <sstream>
 #include <iostream>
@@ -275,7 +279,7 @@ public:
         startRenderer();
 
     }
-    
+
     void display() {
         if (!surface || !renderer) return;
         copyToTexture(surface,13);
@@ -285,14 +289,14 @@ public:
             glColor3f(1.0f,1.0f, 0.f);
             drawRect(start, end);
         }
-        
+
         if (!renderResult.valid())
             return;
         if (renderResult.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
             wrapper->redisplay();
             return;
         }
-        
+
         auto rc = renderResult.get();
         updateTitle(rc.first, rc.second);
         if (numIterations < 10000) {
@@ -300,18 +304,17 @@ public:
             startRenderer();
         }
     }
-    
-    
+
     std::complex<T> pointToSurface(point p) {
         T stepX = (bottomRight.real()-topLeft.real());
         T stepY = (bottomRight.imag()-topLeft.imag());
         return topLeft + std::complex<T>(stepX*p.first,stepY*p.second);
     }
-    
+
     point screenToPoint(unsigned x, unsigned y) {
         return point(((float)x)/surface->getWidth(), ((float)y)/surface->getHeight());
     }
-    
+
     void mouse(int x, int y, unsigned button)
     {
         if (!mouseDown) {
@@ -325,7 +328,7 @@ public:
             end.first = start.first+rw;
             end.second = start.second+(rw/ratio);
         }
-        
+
         if (mouseDown && button == 0) {
             auto tl  = pointToSurface(start);
             auto br = pointToSurface(end);
@@ -337,12 +340,12 @@ public:
         mouseDown = button != 0;
 
         wrapper->redisplay();
-        
+
     }
-    
+
     void startRenderer() {
         std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<T> *)> tsk(&EscapeTimeRenderer<T>::render);
-        
+
         if (renderResult.valid())
             renderResult.wait();
 
@@ -355,14 +358,13 @@ public:
         wrapper->redisplay();
 
     }
-    
+
     void updateTitle(float area, float time) {
         std::ostringstream ss;
         ss<<"Mandelbrot "<<topLeft<<"-"<<bottomRight<<": iterations="<<numIterations<<" area="<<area<<" time="<<time<<" ms";
         wrapper->setWindowTitle(ss.str());
     }
-    
-    
+
 private:
     std::future<std::pair<float,float> > renderResult;
     Palette palette;
@@ -410,7 +412,7 @@ int main(int argc, const char *argv[]) {
     }
     GLUTWrapper wrapper(&argc, (char **)argv);
     ZoomInViewer<double> demo(&wrapper);
-    
+
     wrapper.init(1080, 1080);
     wrapper.run();
     return 0;

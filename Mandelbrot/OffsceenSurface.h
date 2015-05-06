@@ -26,6 +26,8 @@
 #ifndef __Mandelbrot__OffsceenSurface__
 #define __Mandelbrot__OffsceenSurface__
 #include <vector>
+#include <string>
+#include <stddef.h>
 
 template<typename T> class RGB {
 public:
