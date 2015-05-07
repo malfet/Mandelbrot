@@ -10,6 +10,7 @@
 #define Mandelbrot_Polynomial_h
 
 #include <vector>
+#include <algorithm>
 #include <assert.h>
 
 template<typename T> bool isZero(T x) { return x == 0; }
