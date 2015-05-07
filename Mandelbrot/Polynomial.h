@@ -17,9 +17,12 @@ template<typename T> bool isZero(T x) { return x == 0; }
 template<> bool isZero<float>(float x) { return fabs(x)<1e-6;}
 template<> bool isZero<double>(double x) { return fabs(x)<1e-10;}
 template<> bool isZero<std::complex<float> >(std::complex<float> x) { return std::abs(x)<1e-3;}
+template<> bool isZero<std::complex<double> >(std::complex<double> x) { return std::abs(x)<1e-6;}
+
 
 template<typename T> bool isNegative(const T &x) { return x < 0; }
 template<> bool isNegative<std::complex<float> >(const std::complex<float> &x) { return std::abs(x) < 0; }
+template<> bool isNegative<std::complex<double> >(const std::complex<double> &x) { return std::abs(x) < 0; }
 
 
 template<typename T> class Polynomial {
@@ -162,6 +165,7 @@ template<typename T> std::ostream &operator<<(std::ostream &os, const Polynomial
 template<typename T> T findRootLaguerre(const Polynomial<T> &p, T x0=0) {
     T x = x0;
     auto n = T(p.degree());
+    auto nminus1 = n - T(1);
     auto derP = p.derivative();
     auto der2P = derP.derivative();
 
@@ -170,8 +174,9 @@ template<typename T> T findRootLaguerre(const Polynomial<T> &p, T x0=0) {
         auto px = p(x);
         auto G = derP(x)/px;
         auto H = G*G-der2P(x)/px;
-        auto a = n/(G+sqrt((n-T(1))*(n*H-G*G)));
-        std::cout<<"p("<<x<<")="<<px<<" G="<<G<<" H="<<H<<" a="<<a<<std::endl;
+        auto s = sqrt(nminus1*(n*H-G*G));
+        auto a = abs(G+s)>abs(G-s)? n/(G+s) : n/(G-s);
+        //std::cout<<"p("<<x<<")="<<px<<" G="<<G<<" H="<<H<<" a="<<a<<std::endl;
         x-=a;
     }
     std::cout<<"Found root "<<x<<std::endl;
