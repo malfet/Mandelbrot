@@ -50,6 +50,7 @@ public:
         std::transform(coefficients.begin(), coefficients.end(), coefficients.begin(), [b]( T x) { return x/b;});
         return *this;
     }
+    
     /* Deflate polynomial by its root */
     Polynomial deflate(T r) const {
         assert (isRoot(r));
@@ -65,6 +66,19 @@ public:
         auto s = *cit+prev*r;
         assert (isZero(s));
         return Polynomial(nc);
+    }
+    
+    std::pair<Polynomial<T>, T> deflateWithResidue(T r) const {
+        assert (degree()>0);
+        /*Implement Ruffini's rule*/
+        std::vector<T> nc(degree());
+        auto cit = coefficients.rbegin();
+        auto it = nc.rbegin();
+        T prev = 0;
+        while (it != nc.rend())
+            prev = *(it++) = *(cit++)+prev*r;
+        auto s = *cit+prev*r;
+        return std::pair<Polynomial<T>,T>(Polynomial(nc), s);
     }
     
     Polynomial derivative() const {
