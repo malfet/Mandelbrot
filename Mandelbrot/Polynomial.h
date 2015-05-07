@@ -33,9 +33,9 @@ public:
     
     bool isRoot(const T x) const { return isZero(operator()(x));}
  
-    T operator()(const T x) const {
-        T rc = 0;
-        T y = 1;
+    template<typename T1> T1 operator()(const T1 x) const {
+        T1 rc = 0;
+        T1 y(1);
         for(auto c:coefficients) {
             rc += c*y;
             y *= x;
