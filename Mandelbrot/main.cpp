@@ -25,6 +25,7 @@
 
 #include "GLUTWrapper.h"
 #include "EscapeTimeRenderer.h"
+#include "AttractionPointRenderer.h"
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -74,6 +75,20 @@ template<typename T> class Julia:  public PolynomialDynamicalSystem<T> {
 public:
     Julia(T re, T im): PolynomialDynamicalSystem<T>(re,im) {}
     void init(std::complex<T> _x) { x = _x; }
+};
+
+template<typename T> class Newton:public DynamicalSystem<T> {
+public:
+    Newton(const Polynomial<T> &p): poly(p), derPoly(p.derivative()), x(0,0) {}
+    std::complex<T> step() {
+        return x -= poly(x)/derPoly(x);
+    }
+    std::complex<T> getVal() { return x;}
+    void init(std::complex<T> x0) {x = x0;}
+
+private:
+    Polynomial<T> poly, derPoly;
+    std::complex<T> x;
 };
 
 template<typename T> class Multibrot: public DynamicalSystem<T> {
@@ -242,7 +257,7 @@ private:
     T p, dp;
 };
 
-template<typename T>
+template<typename T,typename Renderer>
 class ZoomInViewer {
 public:
     ZoomInViewer(GLUTWrapper *w): wrapper(w), surface(NULL), renderer(NULL) {
@@ -258,7 +273,8 @@ public:
     }
     
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Julia<T>((T)-0.77568377, (T)0.13646737); }; }
-    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
+    //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
+    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Newton<T>((Polynomial<T>::x^3)-1); }; }
 
 
     void reshape(int w, int h) {
@@ -269,7 +285,7 @@ public:
         OffscreenSurface *oldSurface = surface;
         surface = new OffscreenSurface(w,h, palette);
         if (renderer == NULL) {
-            renderer = new EscapeTimeRenderer<T>(surface, getFactory());
+            renderer = new Renderer(surface, getFactory());
         } else {
             if (renderResult.valid())
                 renderResult.wait();
@@ -344,7 +360,7 @@ public:
     }
 
     void startRenderer() {
-        std::packaged_task<std::pair<float,float>(EscapeTimeRenderer<T> *)> tsk(&EscapeTimeRenderer<T>::render);
+        std::packaged_task<std::pair<float,float>(Renderer *)> tsk(&Renderer::render);
 
         if (renderResult.valid())
             renderResult.wait();
@@ -370,7 +386,7 @@ private:
     Palette palette;
     GLUTWrapper *wrapper;
     OffscreenSurface *surface;
-    EscapeTimeRenderer<T> *renderer;
+    Renderer *renderer;
     std::complex<T> topLeft, bottomRight;
     unsigned numIterations;
     point start, end;
@@ -405,6 +421,7 @@ template<typename T> std::vector<T> findMisiurewiczRoots(unsigned k, unsigned n)
 
 
 int main(int argc, const char *argv[]) {
+    
     if (argc > 1) {
         auto pol = buildMisiurewiczPolynomial<double>(4,2);
         std::cout<<"Pol is "<<pol<<std::endl;
@@ -418,7 +435,7 @@ int main(int argc, const char *argv[]) {
         
     }
     GLUTWrapper wrapper(&argc, (char **)argv);
-    ZoomInViewer<double> demo(&wrapper);
+    ZoomInViewer<double,AttractionPointRenderer<double>> demo(&wrapper);
 
     wrapper.init(1080, 1080);
     wrapper.run();

@@ -31,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C47402B81AFFF77B005ED44E /* AttractionPointRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AttractionPointRenderer.h; sourceTree = "<group>"; };
 		C4B99B341A885F77008500B9 /* Mandelbrot */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Mandelbrot; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4B99B371A885F77008500B9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		C4B99B3E1A885F9D008500B9 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -97,6 +98,7 @@
 				C4B99B411A88628E008500B9 /* GLUTWrapper.h */,
 				C4B99B421A8862C5008500B9 /* GLUTWrapper.cpp */,
 				C4B99B481A89C56C008500B9 /* EscapeTimeRenderer.h */,
+				C47402B81AFFF77B005ED44E /* AttractionPointRenderer.h */,
 				C4B99B541A9B1722008500B9 /* vgapalette.h */,
 			);
 			path = Mandelbrot;
