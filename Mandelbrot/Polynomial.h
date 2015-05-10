@@ -176,25 +176,47 @@ template<typename T> std::ostream &operator<<(std::ostream &os, const Polynomial
     return os;
 }
 
-template<typename T> T findRootLaguerre(const Polynomial<T> &p, T x0=0) {
+template<typename T> class DoNotConvergeException {
+public:
+    DoNotConvergeException(T val):lastValue(val) {}
+    const T & getValue() const { return lastValue; }
+private:
+    T lastValue;
+};
+
+template<typename T> T findRootLaguerre(const Polynomial<T> &p, T x0=0, unsigned maxSteps = 500) {
+    unsigned step = 0;
     T x = x0;
     auto n = T(p.degree());
     auto nminus1 = n - T(1);
     auto derP = p.derivative();
     auto der2P = derP.derivative();
 
-    std::cout<<"findRoot(p="<<p<<",x0="<<x0<<"): derP"<<derP<<" der2P="<<der2P<<std::endl;
+    //std::cout<<"findRootLaguerre(p="<<p<<" ,x0="<<x0<<"): derP="<<derP<<" der2P="<<der2P<<std::endl;
     while (!p.isRoot(x)) {
         auto px = p(x);
         auto G = derP(x)/px;
         auto H = G*G-der2P(x)/px;
         auto s = sqrt(nminus1*(n*H-G*G));
         auto a = abs(G+s)>abs(G-s)? n/(G+s) : n/(G-s);
-        //std::cout<<"p("<<x<<")="<<px<<" G="<<G<<" H="<<H<<" a="<<a<<std::endl;
         x-=a;
+        if (step++ > maxSteps) throw DoNotConvergeException<T>(x);
     }
-    std::cout<<"Found root "<<x<<std::endl;
+    //std::cout<<"Found root "<<x<<std::endl;
 
+    return x;
+}
+
+template<typename T> T findRootNewton(const Polynomial<T> &p, T x0=0, unsigned maxSteps = 500) {
+    unsigned step = 0;
+    T x = x0;
+    auto derP = p.derivative();
+    
+    while (!p.isRoot(x)) {
+        auto a = p(x)/derP(x);
+        x =- a;
+        if (step++ > maxSteps) throw DoNotConvergeException<T>(x);
+    }
     return x;
 }
 

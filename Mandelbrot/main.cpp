@@ -390,23 +390,30 @@ template<typename T> Polynomial<T> buildMisiurewiczPolynomial(unsigned k, unsign
 
 template<typename T> std::vector<T> findMisiurewiczRoots(unsigned k, unsigned n) {
     std::vector<T> rc;
-    auto c = buildMisiurewiczPolynomial<std::complex<float> >(k, n);
-    while (c.degree()>0) {
-        auto r = findRootLaguerre(c);
-        rc.push_back(r);
-        c = c.deflate(r);
+    auto c = buildMisiurewiczPolynomial<T>(k, n);
+    try {
+        while (c.degree()>0) {
+            auto r = findRootLaguerre(c);
+            rc.push_back(r);
+            c = c.deflate(r);
+        }
+    } catch (DoNotConvergeException<T> const &e) {
+        std::cerr<<"Could not converege to a root around "<<e.getValue()<<std::endl;
     }
-    
     return rc;
 }
 
 
 int main(int argc, const char *argv[]) {
     if (argc > 1) {
-        auto roots = findMisiurewiczRoots<std::complex<float> >(3, 2);
-        std::cout<<"Roots are";
-        for (auto r: roots) std::cout<<" "<<r;
+        auto pol = buildMisiurewiczPolynomial<double>(4,2);
+        std::cout<<"Pol is "<<pol<<std::endl;
+        auto roots = findMisiurewiczRoots<std::complex<double> >(4, 2);
+        std::cout<<"Roots are ";
+        for (auto r: roots) std::cout<<" "<<r<<" (residue="<<pol(r)<<")";
         std::cout<<std::endl;
+        
+        
         return 0;
         
     }
