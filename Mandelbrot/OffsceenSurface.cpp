@@ -82,7 +82,8 @@ void Palette::randomizeUV(unsigned char Y, unsigned distance)
         auto val = dis(gen);
         auto u = 16+val%225;
         auto v = 16+val/225;
-        if (sqr(pu-u)+sqr(pv-v) < sqr(distance)) continue;
+        unsigned uvDist = sqr(pu-u)+sqr(pv-v);
+        if (uvDist < sqr(distance)) continue;
         pu=u; pv=v;
         auto r = Y+1.370705*(v-128);
         auto g = Y-.698001* (v-128) - 0.337633*(u-128);
