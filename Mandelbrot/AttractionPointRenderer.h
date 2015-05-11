@@ -27,9 +27,9 @@
 #define Mandelbrot_AttractionPointRenderer_h
 #include <complex>
 #include <iostream>
-#include "EscapeTimeRenderer.h"
+#include "AbstractRenderer.h"
 
-template<typename T> class AttractionPointRenderer {
+template<typename T> class AttractionPointRenderer: public AbstractRenderer<T> {
 private:
     std::pair<std::complex<T>, float>  computeAttractionTime(DynamicalSystem<T> *sys, const std::complex<T> &x0) {
         auto px = x0;
@@ -38,23 +38,17 @@ private:
             auto x = sys->step();
             auto diff = x-px;
             px = x;
-            if (norm(diff) < 1e-6) {
+            if (norm(diff) < 1e-8) {
                 return std::pair<std::complex<T>, float> (x, steps);
             }
         }
         return std::pair<std::complex<T>, float> (x0, numIterations);
-        
     }
 
 public:
-    
-    AttractionPointRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): surface(s), factory(f)
-    {
-        topleft = std::complex<T>(-2,-2);
-        bottomright = std::complex<T>(2,2);
-        numIterations = 256;
-    }
-    
+
+    AttractionPointRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): AbstractRenderer<T>(s,f) {}
+
     unsigned getAttractionPointIndex(const std::complex<T> &point) {
         unsigned idx=0;
         for(auto p: attractionPoints)
@@ -62,12 +56,13 @@ public:
                 break;
             else idx++;
         if (idx >= attractionPoints.size()) {
-            std::cout<<"Adding attraction point"<<point<<std::endl;
+            std::cout<<"Adding "<<(idx+1)<<" attraction point"<<point<<std::endl;
             attractionPoints.push_back(point);
         }
         return idx;
     }
-    /*Return area and time in miliseconds */
+
+    /*Return area and time in milliseconds */
     std::pair<T,T> render(void) {
         auto start = std::chrono::steady_clock::now();
         float invIterations = 1.f/numIterations;
@@ -91,24 +86,22 @@ public:
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
         return std::pair<T,T>(T(attractionPoints.size()), duration);
     }
-    
-    void setSurface(OffscreenSurface *s) { surface = s; }
-    void setBounds(std::complex<T> tl, std::complex<T> br) { topleft = tl; bottomright = br; }
-    void setIterations(unsigned it) { numIterations = it; }
-    
+
 private:
-    /* Bounding box*/
-    std::complex<T> topleft,bottomright;
-    
     /* Attraction points */
     std::vector<std::complex<T>> attractionPoints;
-    
-    OffscreenSurface *surface;
+
+    /* Bounding box*/
+    using AbstractRenderer<T>::topleft;
+    using AbstractRenderer<T>::bottomright;
+
+    /*Surface*/
+    using AbstractRenderer<T>::surface;
+
     /* Renderer parameters*/
-    unsigned numIterations;
+    using AbstractRenderer<T>::numIterations;
     /* The system itself*/
-    std::function< DynamicalSystem<T> *()> factory;
-    
+    using AbstractRenderer<T>::factory;
 };
 
 

@@ -45,6 +45,17 @@ Palette BuildVGAPalette()
     return rc;
 }
 
+template<typename T> Polynomial<T> buildMisiurewiczPolynomial(unsigned k, unsigned n) {
+    Polynomial<T> c(0);
+    for(auto i(0);i<k;++i)
+        c = c*c + Polynomial<T>::x;
+    auto pk = c;
+    for (auto i(0); i<n;++i)
+        c = c*c + Polynomial<T>::x;
+    return c-pk;
+}
+
+
 template<typename T> class PolynomialDynamicalSystem: public DynamicalSystem<T> {
 public:
     PolynomialDynamicalSystem(): x(0,0), c(0,0) {}
@@ -274,7 +285,8 @@ public:
     
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Julia<T>((T)-0.77568377, (T)0.13646737); }; }
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
-    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Newton<T>((Polynomial<T>::x^3)-1); }; }
+    //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Newton<T>((Polynomial<T>::x^3)-1); }; }
+    std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Newton<T>(buildMisiurewiczPolynomial<T>(4,2)); }; }
 
 
     void reshape(int w, int h) {
@@ -394,16 +406,6 @@ private:
 
 };
 
-template<typename T> Polynomial<T> buildMisiurewiczPolynomial(unsigned k, unsigned n) {
-    Polynomial<T> c(0);
-    for(auto i(0);i<k;++i)
-        c = c*c + Polynomial<T>::x;
-    auto pk = c;
-    for (auto i(0); i<n;++i)
-        c = c*c + Polynomial<T>::x;
-    return c-pk;
-}
-
 template<typename T> std::vector<T> findMisiurewiczRoots(unsigned k, unsigned n) {
     std::vector<T> rc;
     auto c = buildMisiurewiczPolynomial<T>(k, n);
@@ -421,7 +423,6 @@ template<typename T> std::vector<T> findMisiurewiczRoots(unsigned k, unsigned n)
 
 
 int main(int argc, const char *argv[]) {
-    
     if (argc > 1) {
         auto pol = buildMisiurewiczPolynomial<double>(4,2);
         std::cout<<"Pol is "<<pol<<std::endl;
@@ -429,11 +430,10 @@ int main(int argc, const char *argv[]) {
         std::cout<<"Roots are ";
         for (auto r: roots) std::cout<<" "<<r<<" (residue="<<pol(r)<<")";
         std::cout<<std::endl;
-        
-        
         return 0;
-        
+
     }
+
     GLUTWrapper wrapper(&argc, (char **)argv);
     ZoomInViewer<double,AttractionPointRenderer<double>> demo(&wrapper);
 

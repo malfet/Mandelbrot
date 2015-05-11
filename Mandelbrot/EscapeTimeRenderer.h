@@ -1,5 +1,5 @@
 /*
- * Escape time rendered template
+ * Escape time renderer template
  *
  * Copyright (c) 2015 Nikita Shulga
  * All rights reserved.
@@ -25,33 +25,17 @@
 
 #ifndef __Mandelbrot__EscapeTimeRenderer__
 #define __Mandelbrot__EscapeTimeRenderer__
+#include "AbstractRenderer.h"
 #include <functional>
 #include <chrono>
 #include <future>
 #include <complex>
 #include "OffsceenSurface.h"
 
-
-
-template<typename T> class DynamicalSystem {
+template<typename T> class EscapeTimeRenderer: public AbstractRenderer<T> {
 public:
-    virtual ~DynamicalSystem() {}
-    virtual void init(std::complex<T> c) = 0;
-    virtual std::complex<T> step() = 0;
-    virtual std::complex<T> getVal() = 0;
-};
+    EscapeTimeRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): AbstractRenderer<T>(s,f) {}
 
-
-template<typename T> class EscapeTimeRenderer {
-public:
-    
-    EscapeTimeRenderer(OffscreenSurface *s, std::function<DynamicalSystem<T> *()> f): surface(s), factory(f)
-    {
-        topleft = std::complex<T>(-2,-2);
-        bottomright = std::complex<T>(2,2);
-        numIterations = 256;
-    }
-    
     float computeEscapeTime(DynamicalSystem<T> *sys, const std::complex<T> &c) {
         sys->init(c);
         for (unsigned steps(0); steps < numIterations; ++steps) {
@@ -62,8 +46,15 @@ public:
             }
         }
         return numIterations;
-        
+
     }
+
+private:
+    using AbstractRenderer<T>::numIterations;
+    using AbstractRenderer<T>::factory;
+    using AbstractRenderer<T>::surface;
+    using AbstractRenderer<T>::topleft;
+    using AbstractRenderer<T>::bottomright;
 
 private:
     T renderSection(unsigned sx, unsigned sy, unsigned ex, unsigned ey) {
@@ -87,13 +78,12 @@ private:
             }
         delete sys;
         return rc;
-        
     }
-    
+
     typedef std::pair<unsigned,unsigned> point;
-    
+
     point make_point(unsigned x, unsigned y) {return std::pair<unsigned,unsigned>(x,y);}
-    
+
     /* Partition area into (numSection+1)*(numSection+1) equally sized squares */
     std::vector<std::pair<point, point> > partitionArea(unsigned numSections=1) {
         unsigned width = surface->getWidth();
@@ -109,18 +99,18 @@ private:
             }
         return rc;
     }
-    
+
     std::future<T> renderAsync(point tl, point br) {
         std::future<T> rc(std::async(std::launch::async, &EscapeTimeRenderer::renderSection, this, tl.first, tl.second, br.first, br.second));
         return rc;
     }
-    
+
 public:
-    /*Return area and time in miliseconds */
+    /*Return area and time in milliseconds */
     std::pair<T,T> render(void) {
-        
+
         auto start = std::chrono::steady_clock::now();
-        
+
         std::vector<std::future<T> > rc;
         for(auto& reg: partitionArea(3))
             rc.push_back(renderAsync(reg.first, reg.second));
@@ -132,21 +122,6 @@ public:
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
         return std::pair<T,T>(area, duration);
     }
-    void updateFactory(std::function<DynamicalSystem<T> *()> f) { factory = f; }
-    void setSurface(OffscreenSurface *s) { surface = s; }
-    void setBounds(std::complex<T> tl, std::complex<T> br) { topleft = tl; bottomright = br; }
-    void setIterations(unsigned it) { numIterations = it; }
-    unsigned getIterations() { return numIterations;}
-    
-private:
-    /* Bounding box*/
-    std::complex<T> topleft,bottomright;
-    
-    OffscreenSurface *surface;
-    /* Renderer parameters*/
-    unsigned numIterations;
-    /* The system itself*/
-    std::function< DynamicalSystem<T> *()> factory;
 };
 
 #endif /* defined(__Mandelbrot__EscapeTimeRenderer__) */
