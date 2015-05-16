@@ -47,9 +47,9 @@ public:
     Polynomial(T c=T(0.)):coefficients(1,c) {}
     Polynomial(const std::initializer_list<T> l): coefficients(l) {}
     Polynomial(const std::vector<T> l): coefficients(l) {}
-    
+
     bool isRoot(const T x) const { return isZero(operator()(x));}
- 
+
     template<typename T1> T1 operator()(const T1 x) const {
         T1 rc = 0;
         T1 y(1);
@@ -62,49 +62,55 @@ public:
     size_t degree() const { return coefficients.size()-1;}
     typename std::vector<T>::const_iterator begin() const { return coefficients.begin(); }
     typename std::vector<T>::const_iterator end() const { return coefficients.end(); }
-    
+
     const Polynomial &operator/=(const T &b) {
         std::transform(coefficients.begin(), coefficients.end(), coefficients.begin(), [b]( T x) { return x/b;});
         return *this;
     }
-    
+
     /* Deflate polynomial by its root */
     Polynomial deflate(T r) const {
         assert (isRoot(r));
-        assert (degree()>0);
         if (degree()==1) return Polynomial(coefficients[1]);
-        /*Implement Ruffini's rule*/
-        std::vector<T> nc(degree());
-        auto cit = coefficients.rbegin();
-        auto it = nc.rbegin();
-        T prev = 0;
-        while (it != nc.rend())
-            prev = *(it++) = *(cit++)+prev*r;
-        auto s = *cit+prev*r;
-        assert (isZero(s));
-        return Polynomial(nc);
+        auto rc = deflateWithResidue(r);
+        assert (isZero(rc.second));
+        return rc.first;
     }
-    
+
     std::pair<Polynomial<T>, T> deflateWithResidue(T r) const {
         assert (degree()>0);
         /*Implement Ruffini's rule*/
         std::vector<T> nc(degree());
         auto cit = coefficients.rbegin();
-        auto it = nc.rbegin();
         T prev = 0;
-        while (it != nc.rend())
-            prev = *(it++) = *(cit++)+prev*r;
+        for(auto it = nc.rbegin(); it != nc.rend(); ++it)
+            prev = *it = *(cit++)+prev*r;
         auto s = *cit+prev*r;
         return std::pair<Polynomial<T>,T>(Polynomial(nc), s);
     }
-    
+
+    std::pair<Polynomial<T>, Polynomial<T> > deflateWithResidue(T u, T v) const {
+        assert (degree()>1);
+        std::vector<T> nc(degree()-1);
+        auto cit = coefficients.rbegin();
+        T prev(0), pprev(0);
+
+        for(auto it = nc.rbegin(); it != nc.rend(); ++it) {
+           *it = *(cit++)-u*prev-v*pprev;
+           pprev = prev; prev = *it;
+        }
+
+        auto c = *(cit++)-u*prev-v*pprev;
+        auto d = *cit-v*prev;
+        return std::pair<Polynomial<T>, Polynomial<T> >(Polynomial(nc), Polynomial({d,c}));
+    }
+
     Polynomial derivative() const {
         if (degree()==0) return Polynomial();
         std::vector<T> nc(degree());
         for(unsigned i=0;i<degree();++i)
             nc[i]=T(i+1)*coefficients[i+1];
         return Polynomial(nc);
-        
     }
 
     T operator[](size_t i) const { return i < coefficients.size() ? coefficients[i] : 0; }
