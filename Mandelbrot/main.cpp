@@ -406,27 +406,53 @@ private:
 
 };
 
-template<typename T> std::vector<T> findMisiurewiczRoots(unsigned k, unsigned n) {
-    std::vector<T> rc;
+template<typename T> std::vector<std::complex<T> > findMisiurewiczRootsBairstow(unsigned k, unsigned n) {
+    std::vector<std::complex<T> > rc;
     auto c = buildMisiurewiczPolynomial<T>(k, n);
+    /* Eliminate 0 as root */
+    while (c.isRoot(0))
+       c = c.deflate(0);
     try {
-        while (c.degree()>0) {
+        while (c.degree()>1) {
+            auto r = findQuadraticFactorBairstow(c);
+            auto roots = solveQuadratic(r.first, r.second);
+            rc.push_back(roots.first);
+            rc.push_back(roots.second);
+            c = c.deflate(r.first, r.second);
+        }
+    } catch (DoNotConvergeException<std::complex<T>> const &e) {
+        std::cerr<<"Could not converge to a root around "<<e.getValue()<<std::endl;
+    }
+    return rc;
+}
+
+template<typename T> std::vector<std::complex<T> > findMisiurewiczRootsLaguerre(unsigned k, unsigned n) {
+    std::vector<std::complex<T> > rc;
+    auto c = buildMisiurewiczPolynomial<std::complex<T>>(k, n);
+    /* Eliminate 0 as root */
+    while (c.isRoot(std::complex<T>(0)))
+       c = c.deflate(std::complex<T>(0));
+
+    try {
+        while (c.degree()>1) {
             auto r = findRootLaguerre(c);
             rc.push_back(r);
             c = c.deflate(r);
         }
-    } catch (DoNotConvergeException<T> const &e) {
-        std::cerr<<"Could not converege to a root around "<<e.getValue()<<std::endl;
+    } catch (DoNotConvergeException<std::complex<T>> const &e) {
+        std::cerr<<"Could not converge to a root around "<<e.getValue()<<std::endl;
     }
     return rc;
 }
+
 
 
 int main(int argc, const char *argv[]) {
     if (argc > 1) {
         auto pol = buildMisiurewiczPolynomial<double>(4,2);
         std::cout<<"Pol is "<<pol<<std::endl;
-        auto roots = findMisiurewiczRoots<std::complex<double> >(4, 2);
+        auto roots = findMisiurewiczRootsBairstow<double>(4, 2);
+        //auto roots = findMisiurewiczRootsLaguerre<double>(4, 2);
         std::cout<<"Roots are ";
         for (auto r: roots) std::cout<<" "<<r<<" (residue="<<pol(r)<<")";
         std::cout<<std::endl;
