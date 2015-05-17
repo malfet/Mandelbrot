@@ -48,7 +48,7 @@ public:
     Polynomial(const std::initializer_list<T> l): coefficients(l) {}
     Polynomial(const std::vector<T> l): coefficients(l) {}
 
-    bool isRoot(const T x) const { return isZero(operator()(x));}
+    template<typename T1> bool isRoot(const T1 x) const { return isZero(operator()(x));}
 
     template<typename T1> T1 operator()(const T1 x) const {
         T1 rc = 0;
@@ -77,6 +77,11 @@ public:
         return rc.first;
     }
 
+    Polynomial deflate(T u, T v) const {
+       auto rc = deflateWithResidue(u, v);
+       return rc.first;
+    }
+
     std::pair<Polynomial<T>, T> deflateWithResidue(T r) const {
         assert (degree()>0);
         /*Implement Ruffini's rule*/
@@ -90,6 +95,9 @@ public:
     }
 
     std::pair<Polynomial<T>, Polynomial<T> > deflateWithResidue(T u, T v) const {
+        /* If there is nothing to deflate, return immediately */
+        if (degree()<=1)
+          return std::pair<Polynomial<T>, Polynomial<T> >(Polynomial(), Polynomial(coefficients));
         assert (degree()>1);
         std::vector<T> nc(degree()-1);
         auto cit = coefficients.rbegin();
@@ -242,13 +250,60 @@ template<typename T> T findRootNewton(const Polynomial<T> &p, T x0=0, unsigned m
     unsigned step = 0;
     T x = x0;
     auto derP = p.derivative();
-    
+
     while (!p.isRoot(x)) {
         auto a = p(x)/derP(x);
         x =- a;
         if (step++ > maxSteps) throw DoNotConvergeException<T>(x);
     }
     return x;
+}
+
+
+template<typename T> using conjugatePair = std::pair <std::complex<T>, std::complex<T> >;
+
+template<typename T> conjugatePair<T> solveQuadratic(T u, T v) {
+    auto D = u*u-4*v;
+    if ( D >= 0)
+        return conjugatePair<T> (std::complex<T>(.5*(-u-sqrt(D))), std::complex<T>(.5*(-u+sqrt(D))));
+
+    return conjugatePair<T> (std::complex<T>(-.5*u,.5*sqrt(-D)), std::complex<T>(-.5*-u,.5*sqrt(-D)));
+}
+
+template<typename T> conjugatePair<T> findRootsBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
+   auto rc = findQuadraticFactorBairstow (p, maxSteps);
+   return solveQuadratic (rc.first, rc.second);
+}
+
+template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
+    assert (p.degree() > 1);
+
+    /* Initial quadratic polynomial coefficients */
+    auto u = p[p.degree()-1];
+    auto v = p[p.degree()-2];
+    if (p[p.degree()]!=0) {
+        u /= p[p.degree()];
+        v /= p[p.degree()];
+    }
+    unsigned steps = 0;
+    auto roots = solveQuadratic(u,v);
+    while (!p.isRoot(roots.first)) {
+        if (steps++ > maxSteps) throw DoNotConvergeException<decltype(roots.first)>(roots.first);
+        /* Compute residue */
+        auto Pq = p.deflateWithResidue(u,v);
+        auto c = Pq.second[1];
+        auto d = Pq.second[0];
+        /* Compute du,dv-derivatives of the residue */
+        auto Qq = Pq.first.deflateWithResidue(u,v);
+        auto g = Qq.second[1];
+        auto h = Qq.second[0];
+        /* J is determinant of residue partial derivatives matrix */
+        auto J = 1/(v*g*g+h*(h-u*g));
+        auto nu = u-J*(g*d-h*c);
+        auto nv = v-J*((g*u-h)*d-g*v*c);
+        roots = solveQuadratic(u = nu, v = nv);
+    }
+    return std::pair<T, T> (u, v);
 }
 
 #endif
