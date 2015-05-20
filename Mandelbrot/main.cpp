@@ -454,7 +454,7 @@ int main(int argc, const char *argv[]) {
         auto roots = findMisiurewiczRootsBairstow<double>(4, 2);
         //auto roots = findMisiurewiczRootsLaguerre<double>(4, 2);
         std::cout<<"Roots are ";
-        for (auto r: roots) std::cout<<" "<<r<<" (residue="<<pol(r)<<")";
+        for (auto r: roots) std::cout<<" "<<r<<" (error="<<std::abs(pol(r))<<")";
         std::cout<<std::endl;
         return 0;
 

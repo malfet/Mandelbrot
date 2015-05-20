@@ -72,17 +72,17 @@ public:
     Polynomial deflate(T r) const {
         assert (isRoot(r));
         if (degree()==1) return Polynomial(coefficients[1]);
-        auto rc = deflateWithResidue(r);
+        auto rc = deflateWithReminder(r);
         assert (isZero(rc.second));
         return rc.first;
     }
 
     Polynomial deflate(T u, T v) const {
-       auto rc = deflateWithResidue(u, v);
+       auto rc = deflateWithReminder(u, v);
        return rc.first;
     }
 
-    std::pair<Polynomial<T>, T> deflateWithResidue(T r) const {
+    std::pair<Polynomial<T>, T> deflateWithReminder(T r) const {
         assert (degree()>0);
         /*Implement Ruffini's rule*/
         std::vector<T> nc(degree());
@@ -94,7 +94,7 @@ public:
         return std::pair<Polynomial<T>,T>(Polynomial(nc), s);
     }
 
-    std::pair<Polynomial<T>, Polynomial<T> > deflateWithResidue(T u, T v) const {
+    std::pair<Polynomial<T>, Polynomial<T> > deflateWithReminder(T u, T v) const {
         /* If there is nothing to deflate, return immediately */
         if (degree()<=1)
           return std::pair<Polynomial<T>, Polynomial<T> >(Polynomial(), Polynomial(coefficients));
@@ -288,16 +288,16 @@ template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial
 
     while (true) {
         if (steps++ > maxSteps) throw DoNotConvergeException<std::pair<T, T> >(std::pair<T,T>(u,v));
-        /* Compute residue */
-        auto Pq = p.deflateWithResidue(u,v);
+        /* Compute remainder */
+        auto Pq = p.deflateWithReminder(u,v);
         auto c = Pq.second[1];
         auto d = Pq.second[0];
         if (isZero(c)&&isZero(d)) break;
-        /* Compute du,dv-derivatives of the residue */
-        auto Qq = Pq.first.deflateWithResidue(u,v);
+        /* Compute du,dv-derivatives of the remainder */
+        auto Qq = Pq.first.deflateWithReminder(u,v);
         auto g = Qq.second[1];
         auto h = Qq.second[0];
-        /* J is determinant of residue partial derivatives matrix */
+        /* J is determinant of reminder partial derivatives matrix */
         auto J = 1/(v*g*g+h*(h-u*g));
         auto nu = u-J*(g*d-h*c);
         auto nv = v-J*((g*u-h)*d-g*v*c);
