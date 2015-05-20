@@ -276,16 +276,11 @@ template<typename T> conjugatePair<T> findRootsBairstow(const Polynomial<T> &p, 
 }
 
 template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
+    T u(0), v(0);
+    unsigned steps = 0;
+
     assert (p.degree() > 1);
 
-    /* Initial quadratic polynomial coefficients */
-    auto u = p[p.degree()-1];
-    auto v = p[p.degree()-2];
-    if (p[p.degree()]!=0) {
-        u /= p[p.degree()];
-        v /= p[p.degree()];
-    }
-    unsigned steps = 0;
     auto roots = solveQuadratic(u,v);
     while (!p.isRoot(roots.first)) {
         if (steps++ > maxSteps) throw DoNotConvergeException<decltype(roots.first)>(roots.first);
