@@ -272,7 +272,12 @@ template<typename T> conjugatePair<T> solveQuadratic(T u, T v) {
 
 template<typename T> conjugatePair<T> findRootsBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
    auto rc = findQuadraticFactorBairstow (p, maxSteps);
-   return solveQuadratic (rc.first, rc.second);
+    try {
+        return solveQuadratic (rc.first, rc.second);
+    } catch (const DoNotConvergeException<std::pair<T,T> > &e) {
+        auto roots = solveQuadratic(e.getValue().first, e.getValue().second);
+        throw DoNotConvergeException<decltype(roots)>(roots);
+    }
 }
 
 template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
@@ -281,13 +286,13 @@ template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial
 
     assert (p.degree() > 1);
 
-    auto roots = solveQuadratic(u,v);
-    while (!p.isRoot(roots.first)) {
-        if (steps++ > maxSteps) throw DoNotConvergeException<decltype(roots.first)>(roots.first);
+    while (true) {
+        if (steps++ > maxSteps) throw DoNotConvergeException<std::pair<T, T> >(std::pair<T,T>(u,v));
         /* Compute residue */
         auto Pq = p.deflateWithResidue(u,v);
         auto c = Pq.second[1];
         auto d = Pq.second[0];
+        if (isZero(c)&&isZero(d)) break;
         /* Compute du,dv-derivatives of the residue */
         auto Qq = Pq.first.deflateWithResidue(u,v);
         auto g = Qq.second[1];
@@ -296,7 +301,7 @@ template<typename T> std::pair<T,T> findQuadraticFactorBairstow(const Polynomial
         auto J = 1/(v*g*g+h*(h-u*g));
         auto nu = u-J*(g*d-h*c);
         auto nv = v-J*((g*u-h)*d-g*v*c);
-        roots = solveQuadratic(u = nu, v = nv);
+        u = nu; v = nv;
     }
     return std::pair<T, T> (u, v);
 }
