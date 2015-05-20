@@ -267,7 +267,7 @@ template<typename T> conjugatePair<T> solveQuadratic(T u, T v) {
     if ( D >= 0)
         return conjugatePair<T> (std::complex<T>(.5*(-u-sqrt(D))), std::complex<T>(.5*(-u+sqrt(D))));
 
-    return conjugatePair<T> (std::complex<T>(-.5*u,.5*sqrt(-D)), std::complex<T>(-.5*-u,.5*sqrt(-D)));
+    return conjugatePair<T> (std::complex<T>(-.5*u,-.5*sqrt(-D)), std::complex<T>(-.5*u,.5*sqrt(-D)));
 }
 
 template<typename T> conjugatePair<T> findRootsBairstow(const Polynomial<T> &p, unsigned maxSteps = 500) {
