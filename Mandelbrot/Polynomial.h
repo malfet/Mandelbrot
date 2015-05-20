@@ -33,13 +33,13 @@
 template<typename T> bool isZero(T x) { return x == 0; }
 template<> bool isZero<float>(float x) { return fabs(x)<1e-6;}
 template<> bool isZero<double>(double x) { return fabs(x)<1e-10;}
-template<> bool isZero<std::complex<float> >(std::complex<float> x) { return std::abs(x)<1e-3;}
-template<> bool isZero<std::complex<double> >(std::complex<double> x) { return std::abs(x)<1e-6;}
+template<> bool isZero<std::complex<float> >(std::complex<float> x) { return std::norm(x)<1e-6;}
+template<> bool isZero<std::complex<double> >(std::complex<double> x) { return std::norm(x)<1e-12;}
 
 
 template<typename T> bool isNegative(const T &x) { return x < 0; }
-template<> bool isNegative<std::complex<float> >(const std::complex<float> &x) { return std::abs(x) < 0; }
-template<> bool isNegative<std::complex<double> >(const std::complex<double> &x) { return std::abs(x) < 0; }
+template<> bool isNegative<std::complex<float> >(const std::complex<float> &x) { return false; }
+template<> bool isNegative<std::complex<double> >(const std::complex<double> &x) { return false; }
 
 
 template<typename T> class Polynomial {
