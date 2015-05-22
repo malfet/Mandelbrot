@@ -107,10 +107,10 @@ public:
     Multibrot(T _p):x(0,0),c(0,0),p(_p) {}
 
     void init(std::complex<T> _c) { c = _c; x = 0; }
-    
+
     std::complex<T> step() {
         return x = pow(x,p) + c;
-        
+
     }
     std::complex<T> getVal() { return x; }
 private:
@@ -204,13 +204,13 @@ private:
         std::thread taskThread(std::move(tsk), renderer);
         taskThread.detach();
     }
-    
+
     void updatePower() {
         p += dp;
         if (p < 1.0 || p > 5.0) dp *= -1;
         if (p>5.0) wrapper->quit();
     }
-    
+
     void saveImage() {
         std::ostringstream ss;
         ss<<getHomeFolder()<<"/Mandel-results/pow(x,"<<p<<").jpg";
@@ -223,13 +223,13 @@ private:
         ss<<getHomeFolder()<<"/Mandel-results/palette.dat";
         palette.save(ss.str());
     }
-    
+
     void updateTitle(float area, float time) {
         std::ostringstream ss;
         ss<<"x=pow(x,"<<p<<")+c area="<<area<<" time="<<time<<" ms";
         wrapper->setWindowTitle(ss.str());
     }
-    
+
     void display() {
         if (!surface || !renderer) return;
         copyToTexture(surface,13);
@@ -242,9 +242,9 @@ private:
         saveImage();
         startRenderer();
     }
-    
+
     void reshape(int w, int h) {
-        
+
         glInit();
         glConfigureCamera(w, h);
 
@@ -259,7 +259,7 @@ private:
         }
         delete oldSurface;
     }
-    
+
     std::future<std::pair<float,float> > renderResult;
     Palette palette;
     GLUTWrapper *wrapper;
@@ -282,7 +282,7 @@ public:
         wrapper->setMouseFunc(std::bind(&ZoomInViewer::mouse, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     }
-    
+
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Julia<T>((T)-0.77568377, (T)0.13646737); }; }
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Mandelbrot<T>(); }; }
     //std::function<DynamicalSystem<T> *()> getFactory() { return [&] { return new Newton<T>((Polynomial<T>::x^3)-1); }; }
@@ -290,10 +290,10 @@ public:
 
 
     void reshape(int w, int h) {
-        
+
         glInit();
         glConfigureCamera(w, h);
-        
+
         OffscreenSurface *oldSurface = surface;
         surface = new OffscreenSurface(w,h, palette);
         if (renderer == NULL) {
@@ -412,16 +412,18 @@ template<typename T> std::vector<std::complex<T> > findMisiurewiczRootsBairstow(
     /* Eliminate 0 as root */
     while (c.isRoot(0))
        c = c.deflate(0);
-    try {
-        while (c.degree()>1) {
-            auto r = findQuadraticFactorBairstow(c);
-            auto roots = solveQuadratic(r.first, r.second);
-            rc.push_back(roots.first);
-            rc.push_back(roots.second);
-            c = c.deflate(r.first, r.second);
+    while (c.degree()>1) {
+        std::pair<T,T> factors;
+        try {
+            factors = findQuadraticFactorBairstow(c);
+        } catch (DoNotConvergeException<std::pair<T, T> > const &e) {
+            factors = e.getValue();
+            std::cerr<<"Could not converge to a root around factors "<<factors.first<<" and "<<factors.second<<std::endl;
         }
-    } catch (DoNotConvergeException<std::complex<T>> const &e) {
-        std::cerr<<"Could not converge to a root around "<<e.getValue()<<std::endl;
+        auto roots = solveQuadratic(factors.first, factors.second);
+        rc.push_back(roots.first);
+        rc.push_back(roots.second);
+        c = c.deflate(factors.first, factors.second);
     }
     return rc;
 }
@@ -449,10 +451,13 @@ template<typename T> std::vector<std::complex<T> > findMisiurewiczRootsLaguerre(
 
 int main(int argc, const char *argv[]) {
     if (argc > 1) {
-        auto pol = buildMisiurewiczPolynomial<double>(4,2);
-        std::cout<<"Pol is "<<pol<<std::endl;
-        auto roots = findMisiurewiczRootsBairstow<double>(4, 2);
-        //auto roots = findMisiurewiczRootsLaguerre<double>(4, 2);
+        int k = atoi(argv[1]);
+        unsigned n = argc>2 ? atoi(argv[2]) : 2;
+        if (k<= 0) k = 4;
+        auto pol = buildMisiurewiczPolynomial<double>(k,n);
+        std::cout<<"Misiurewicz("<<k<<","<<n<<") polynomial is "<<pol<<std::endl;
+        auto roots = findMisiurewiczRootsBairstow<double>(k, n);
+        //auto roots = findMisiurewiczRootsLaguerre<double>(k, n);
         std::cout<<"Roots are ";
         for (auto r: roots) std::cout<<" "<<r<<" (error="<<std::abs(pol(r))<<")";
         std::cout<<std::endl;
